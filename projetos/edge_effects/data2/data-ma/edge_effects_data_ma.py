@@ -53,9 +53,9 @@ CENTER_POINT = 40.748, -73.985
 #UF = 'br'
 #CENTER_PONIT = -15.800, -47.867
 
-MAX_RADIUS = 1000
+MAX_RADIUS = 1500
 RADIUS_SUBGRAPH = 400
-MEASURES = 7
+MEASURES = 12
 
 
 # ==============================
