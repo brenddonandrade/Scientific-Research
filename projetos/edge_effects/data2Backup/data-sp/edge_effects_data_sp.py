@@ -53,8 +53,8 @@ CENTER_POINT = -23.546, -46.634
 #UF = 'br'
 #CENTER_PONIT = -15.800, -47.867
 
-MAX_RADIUS = 3100
-RADIUS_SUBGRAPH = 3000
+MAX_RADIUS = 2900
+RADIUS_SUBGRAPH = 2800
 MEASURES = 2
 
 
@@ -116,6 +116,7 @@ def vulnerability_edge(graph):
 G = ox.graph.graph_from_point(CENTER_POINT, dist=MAX_RADIUS, dist_type='bbox', network_type='drive', simplify=True)
 
 # len(G)
+print(G)
 
 """## Generating data"""
 
@@ -204,7 +205,7 @@ def save_data(center_point, measures, size_subgraph , max_radius, uf):
 
     for size in range(size_subgraph, max_radius + interval, interval):
         time_start = t.time()
-        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', simplify=True, truncate_by_edge=True)
+        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', simplify=True)
         graph = generating_data(graph)
 
         nodes_df, edges_df = ox.utils_graph.graph_to_gdfs(graph)

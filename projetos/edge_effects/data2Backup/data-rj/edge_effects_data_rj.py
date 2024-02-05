@@ -18,52 +18,39 @@ import plotly.express as px
 import networkx as nx
 import numpy as np
 import pandas as pd
-#from shapely.constructive import normalize
+from shapely.constructive import normalize
 import requests
 from io import StringIO
 import seaborn as sns
 import matplotlib.pyplot as plt
 import time as t
-import ast
 
 """## Constants"""
 
 # certo
 # São Paulo (centro)
-UF = 'sp'
-CENTER_POINT = -23.546, -46.634
+#CENTER_POINT = -23.209,-45.850
 
 # São José
-# UF = 'sj'
-# CENTER_POINT = -23.220,-45.891
+#CENTER_POINT = -23.220,-45.891
 
 # Rio de Janeiro
-# UF = 'rj'
-# CENTER_POINT = -22.909,-43.184
+CENTER_POINT = -22.909,-43.184
 
 # Barcelona
-# UF = 'ba'
 # CENTER_POINT = 41.390, 2.166
 
-# Manhattan
-#UF = 'ma'
-#CENTER_POINT = 40.748, -73.985
-
-# Brasilia
-#UF = 'br'
-#CENTER_PONIT = -15.800, -47.867
-
-MAX_RADIUS = 3100
-RADIUS_SUBGRAPH = 3000
+MAX_RADIUS = 2800
+RADIUS_SUBGRAPH = 2700
 MEASURES = 2
 
 
 # ==============================
 # teste
 # CENTER_POINT = -23.209,-45.850
-# MAX_RADIUS = 1000
-# RADIUS_SUBGRAPH = 500
-# MEASURES = 2
+# MAX_RADIUS = 3000
+# RADIUS_SUBGRAPH = 1500
+# MEASURES = 16
 
 """## Support functions
 
@@ -111,11 +98,16 @@ def vulnerability_edge(graph):
 
     graph.graph['vulnerability-edge']= vul
 
+def work_with_data(df, name_index):
+    df.set_index(df[name_index], inplace=True)
+    return df
+
 """## Getting network"""
 
 G = ox.graph.graph_from_point(CENTER_POINT, dist=MAX_RADIUS, dist_type='bbox', network_type='drive', simplify=True)
 
 # len(G)
+print(G)
 
 """## Generating data"""
 
@@ -141,25 +133,26 @@ def generating_data(graph):
 
     # calculete communicability of the nodes
     # Note that communicability is defined for a simple graph (our graph is not of this type)
-    #simple_graph = nx.Graph(graph)
-    #com = nx.communicability_exp(simple_graph)
-    # for node_p, nodes_values in com.items():
-    #     let_com = 0
-    #     for node_q, com_value in nodes_values.items():
-    #         let_com = let_com + com_value
+    simple_graph = nx.Graph(graph)
+    com = nx.communicability_exp(simple_graph)
+    dict_com = {}
+    for node_p, nodes_values in com.items():
+        let_com = 0
+        for node_q, com_value in nodes_values.items():
+            let_com = let_com + com_value
 
-    #     dict_com[node_p] = (let_com/len(list(graph.nodes)))
-    #nx.set_node_attributes(graph, values=com, name="com")
+        dict_com[node_p] = (let_com/len(list(graph.nodes)))
+    nx.set_node_attributes(graph, values=dict_com, name="com")
 
 
     # graph attributes
     # calculate efficiency
-    # e = nx.global_efficiency(simple_graph)
-    # dict_eff = {}
-    # for node in simple_graph:
-        # dict_eff[node] = e
+    e = nx.global_efficiency(simple_graph)
+    dict_eff = {}
+    for node in simple_graph:
+        dict_eff[node] = e
 
-    # nx.set_node_attributes(graph, values=dict_eff, name='eff')
+    nx.set_node_attributes(graph, values=dict_eff, name='eff')
 
 
 
@@ -198,17 +191,17 @@ def create_data_frame(graph):
     return nodes_df, edges_df
 
 # Save data for tests
-def save_data(center_point, measures, size_subgraph , max_radius, uf):
+def save_data(center_point, measures, size_subgraph , max_radius):
     interval = (max_radius - size_subgraph)//measures;
     print(interval)
 
     for size in range(size_subgraph, max_radius + interval, interval):
         time_start = t.time()
-        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', simplify=True, truncate_by_edge=True)
+        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', simplify=True)
         graph = generating_data(graph)
 
         nodes_df, edges_df = ox.utils_graph.graph_to_gdfs(graph)
-        nodes_df.to_csv(f'data-nodes-{uf}-{size}.csv')
+        nodes_df.to_csv(f'data-nodes-rj-{size}.csv')
 
         time_end = t.time()
 
@@ -242,7 +235,7 @@ def getting_file_github(url):
 """## Requests"""
 
 # Uncomment the line below to generate your own data
-nodes_df = save_data(CENTER_POINT, MEASURES-1, RADIUS_SUBGRAPH, MAX_RADIUS, UF)
+nodes_df = save_data(CENTER_POINT, MEASURES-1, RADIUS_SUBGRAPH, MAX_RADIUS)
 # node_df_500 = pd.read_csv('data-nodes-500.csv')
 # node_df_1000 = pd.read_csv('data-nodes-1000.csv')
 
@@ -302,23 +295,7 @@ nodes_df = save_data(CENTER_POINT, MEASURES-1, RADIUS_SUBGRAPH, MAX_RADIUS, UF)
 # edge_df_2900 = getting_file_github('https://raw.githubusercontent.com/brenddonandrade/Scientific-Research/main/projetos/roadNetworks/data/case-2/data-edges-2900.csv')
 # edge_df_3000 = getting_file_github('https://raw.githubusercontent.com/brenddonandrade/Scientific-Research/main/projetos/roadNetworks/data/case-2/data-edges-3000.csv')
 
-# nodes_df
-
-# node_df_500 = pd.read_csv('data-nodes-com-sp-500.csv')
-# node_df_1000 = pd.read_csv('data-nodes-com-sp-1000.csv')
-
-# index_name = list(node_df_500['osmid'].values)
-# node_df_500.index = index_name
-
-# node_df_500['com'][1454006738]
-
-# for value_1, value_2 in node_df_500['com'].items():
-    # print(value_1, dict(value_2).keys())
-
-# simple_graph = nx.Graph(G)
-# com = nx.communicability_exp(simple_graph)
-
-# com
+# node_df_500
 
 # node_df_500
 

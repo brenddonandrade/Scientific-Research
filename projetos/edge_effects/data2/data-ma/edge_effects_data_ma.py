@@ -53,9 +53,9 @@ CENTER_POINT = 40.748, -73.985
 #UF = 'br'
 #CENTER_PONIT = -15.800, -47.867
 
-MAX_RADIUS = 1500
-RADIUS_SUBGRAPH = 400
-MEASURES = 12
+MAX_RADIUS = 400
+RADIUS_SUBGRAPH = 1000
+MEASURES = 7
 
 
 # ==============================
@@ -204,7 +204,7 @@ def save_data(center_point, measures, size_subgraph , max_radius, uf):
 
     for size in range(size_subgraph, max_radius + interval, interval):
         time_start = t.time()
-        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', truncate_by_edge=False)
+        graph = ox.graph.graph_from_point(center_point, dist = size, dist_type='bbox', network_type='drive', truncate_by_edge=True)
         graph = generating_data(graph)
 
         nodes_df, edges_df = ox.utils_graph.graph_to_gdfs(graph)
